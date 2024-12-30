@@ -1,0 +1,185 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+class Product {
+    String name;
+    int quantity;
+    double price;
+
+    public Product(String name, int quantity, double price) {
+        this.name = name;
+        this.quantity = quantity;
+        this.price = price;
+    }
+
+    public String toString() {
+        return name + " - Quantity: " + quantity + ", Price: $" + price;
+    }
+}
+
+class InventorySystem {
+    private ArrayList<Product> inventory;
+    private JFrame frame;
+    private JTextArea productDisplayArea;
+    private JTextField nameField, quantityField, priceField;
+
+    public InventorySystem() {
+        inventory = new ArrayList<>();
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        frame = new JFrame("Inventory Management");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(600, 400);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(6, 2));
+
+        JLabel nameLabel = new JLabel("Product Name:");
+        nameField = new JTextField();
+        JLabel quantityLabel = new JLabel("Quantity:");
+        quantityField = new JTextField();
+        JLabel priceLabel = new JLabel("Price:");
+        priceField = new JTextField();
+
+        JButton addButton = new JButton("Add Product");
+        addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                addProduct();
+            }
+        });
+
+        JButton editButton = new JButton("Edit Product");
+        editButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editProduct();
+            }
+        });
+
+        JButton deleteButton = new JButton("Delete Product");
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                deleteProduct();
+            }
+        });
+
+        productDisplayArea = new JTextArea(10, 30);
+        productDisplayArea.setEditable(false);
+
+        panel.add(nameLabel);
+        panel.add(nameField);
+        panel.add(quantityLabel);
+        panel.add(quantityField);
+        panel.add(priceLabel);
+        panel.add(priceField);
+        panel.add(addButton);
+        panel.add(editButton);
+        panel.add(deleteButton);
+
+        frame.add(panel, BorderLayout.NORTH);
+        frame.add(new JScrollPane(productDisplayArea), BorderLayout.CENTER);
+
+        frame.setVisible(true);
+    }
+
+    private void addProduct() {
+        String name = nameField.getText().trim();
+        int quantity = 0;
+        double price = 0.0;
+        try {
+            quantity = Integer.parseInt(quantityField.getText().trim());
+            price = Double.parseDouble(priceField.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(frame, "Invalid quantity or price", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if (name.isEmpty() || quantity <= 0 || price <= 0) {
+            JOptionPane.showMessageDialog(frame, "Please enter valid product details.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        inventory.add(new Product(name, quantity, price));
+        refreshProductList();
+    }
+
+    private void editProduct() {
+        String name = nameField.getText().trim();
+        if (name.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Please enter a product name to edit.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        for (Product product : inventory) {
+            if (product.name.equalsIgnoreCase(name)) {
+                try {
+                    int newQuantity = Integer.parseInt(quantityField.getText().trim());
+                    double newPrice = Double.parseDouble(priceField.getText().trim());
+
+                    if (newQuantity <= 0 || newPrice <= 0) {
+                        JOptionPane.showMessageDialog(frame, "Invalid quantity or price", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    product.quantity = newQuantity;
+                    product.price = newPrice;
+                    refreshProductList();
+                    return;
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(frame, "Invalid quantity or price", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+        }
+
+        JOptionPane.showMessageDialog(frame, "Product not found.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void deleteProduct() {
+        String name = nameField.getText().trim();
+        if (name.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Please enter a product name to delete.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Product toDelete = null;
+        for (Product product : inventory) {
+            if (product.name.equalsIgnoreCase(name)) {
+                toDelete = product;
+                break;
+            }
+        }
+
+        if (toDelete != null) {
+            inventory.remove(toDelete);
+            refreshProductList();
+        } else {
+            JOptionPane.showMessageDialog(frame, "Product not found.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void refreshProductList() {
+        productDisplayArea.setText("");
+        for (Product product : inventory) {
+            productDisplayArea.append(product + "\n");
+        }
+    }
+
+    public static void main(String[] args) {
+        // Create user authentication
+        String username = "admin";
+        String password = "password123";
+
+        String inputUsername = JOptionPane.showInputDialog("Enter username:");
+        String inputPassword = JOptionPane.showInputDialog("Enter password:");
+
+        if (username.equals(inputUsername) && password.equals(inputPassword)) {
+            new InventorySystem();
+        } else {
+            JOptionPane.showMessageDialog(null, "Invalid login credentials", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
